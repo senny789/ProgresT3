@@ -22,7 +22,7 @@ const isAuthorized=middleware(async(opts)=>{
   
   const { ctx } = opts;
   const token=ctx.req.headers.authorization?.split(' ')[1]??'';
-  const verifyToken=verifyJwt(token,'accessTokenPublicKey')
+  const verifyToken=verifyJwt(token)
   if (!verifyToken) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }

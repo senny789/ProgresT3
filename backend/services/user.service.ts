@@ -4,11 +4,11 @@ import { Prisma } from "@prisma/client";
 
 export const signTokens = async (user: Prisma.UserCreateInput) => {
  
-    const access_token = signJwt({ sub: user.email }, 'accessTokenPrivateKey', {
+    const access_token = signJwt({ sub: user.email }, {
       expiresIn: `${customConfig.accessTokenExpiresIn}m`,
     });
   
-    const refresh_token = signJwt({ sub: user.email }, 'refreshTokenPrivateKey', {
+    const refresh_token = signJwt({ sub: user.email },  {
       expiresIn: `${customConfig.refreshTokenExpiresIn}m`,
     });
   
@@ -18,7 +18,7 @@ export const signTokens = async (user: Prisma.UserCreateInput) => {
 export const decodeToken=(opts:any)=>{
   const { ctx } = opts;
   const token=ctx.req.headers.authorization?.split(' ')[1]??'';
-  const decoded=verifyJwt<{sub:string}>(token,'accessTokenPublicKey')
+  const decoded=verifyJwt<{sub:string}>(token)
   if(decoded)
   return decoded;
 else
