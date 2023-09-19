@@ -1,3 +1,4 @@
+"use client";
 import { logoutUser } from "@/store/AuthReducer";
 import { LogOutIcon } from "lucide-react";
 import Link from "next/link";

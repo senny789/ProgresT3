@@ -1,4 +1,3 @@
-"use client";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,7 +8,8 @@ import { Provider } from "react-redux";
 import { store } from "@/store/store";
 
 import AuthChecker from "@/components/AuthChecker";
-import { trpc } from "@/utils/trpc";
+
+import { TrpcReduxProvider } from "@/utils/trpc-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +28,7 @@ function RootLayout({
 	return (
 		<html lang="en">
 			<body className={cn(inter.className, "flex gap-8 min-h-screen")}>
-				<Provider store={store}>
+				<TrpcReduxProvider>
 					<AuthChecker
 						renderAuth={
 							<>
@@ -41,9 +41,9 @@ function RootLayout({
 
 						<Toaster />
 					</AuthChecker>
-				</Provider>
+				</TrpcReduxProvider>
 			</body>
 		</html>
 	);
 }
-export default trpc.withTRPC(RootLayout);
+export default RootLayout;
