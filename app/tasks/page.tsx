@@ -21,8 +21,8 @@ const Task = () => {
 			</Button>
 			<TaskAddModal open={open} handleOpen={setOpen} />
 
-			<main className="mt-4">
-				<ul className="text-3xl flex flex-col gap-6 justify-center">
+			<main className="mt-10">
+				<ul className="text-3xl flex flex-col gap-10 justify-center list-disc">
 					<li className="link">
 						<Link href="/tasks/daily">Daily</Link>
 					</li>

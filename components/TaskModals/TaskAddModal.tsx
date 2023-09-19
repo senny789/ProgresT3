@@ -33,7 +33,19 @@ import { useToast } from "@/components/ui/use-toast";
 import { trpc } from "@/utils/trpc";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusIcon } from "lucide-react";
+import { CalendarIcon, PlusIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import {
+	Popover,
+	PopoverTrigger,
+	PopoverContent,
+} from "@radix-ui/react-popover";
+import { format } from "date-fns";
+import { Calendar } from "../ui/calendar";
+import { Textarea } from "../ui/textarea";
+import { useSelector } from "react-redux";
+import { selectUserId } from "@/store/AuthReducer";
 type TaskType = {
 	type: "daily" | "weekly" | "monthly" | "yearly";
 	status: "idle" | "ongoing" | "finished" | "halted";
@@ -53,6 +65,7 @@ const TaskAddModal = ({
 		type: z.enum(["daily", "monthly", "weekly", "yearly"]),
 		status: z.enum(["idle", "ongoing", "finished", "halted"]),
 		title: z.string({ required_error: "Please enter Title " }),
+		deadline: z.date({ required_error: "Please enter deadline " }),
 		description: z.string({ required_error: "Please enter Description " }),
 	});
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -76,17 +89,21 @@ const TaskAddModal = ({
 
 			handleOpen(false);
 		},
-		onError() {
+		onError(err) {
 			toast({
-				title: "Something went wrong",
+				title: err.message,
+				variant: "destructive",
 			});
 		},
 	});
+	const userId = useSelector(selectUserId);
+
 	const handleSubmit = (values: z.infer<typeof formSchema>) => {
 		const taskType = typeof type !== undefined ? { ...type } : {};
 		taskMutation.mutate({
 			...values,
 			...(taskType as any),
+			userId: userId,
 		});
 	};
 
@@ -101,105 +118,156 @@ const TaskAddModal = ({
 						</DialogDescription>
 					</DialogHeader>
 					<Form {...form}>
-						<form
-							onSubmit={form.handleSubmit(handleSubmit)}
-							className="space-y-8"
-						>
-							{type !== undefined ? null : (
-								<>
-									<FormField
-										control={form.control}
-										name="type"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Type</FormLabel>
+						<form onSubmit={form.handleSubmit(handleSubmit)}>
+							<span className="grid grid-cols-2 gap-10">
+								{type !== undefined ? null : (
+									<>
+										<FormField
+											control={form.control}
+											name="type"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Type</FormLabel>
 
-												<Select
-													onValueChange={field.onChange}
-													defaultValue={field.value}
-												>
+													<Select
+														onValueChange={field.onChange}
+														defaultValue={field.value}
+													>
+														<FormControl>
+															<SelectTrigger>
+																<SelectValue placeholder="Select Type" />
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															<SelectItem value="daily">Daily</SelectItem>
+															<SelectItem value="weekly">Weekly</SelectItem>
+															<SelectItem value="monthly">Monthly</SelectItem>
+															<SelectItem value="yearly">Yearly</SelectItem>
+														</SelectContent>
+													</Select>
+													<FormDescription>
+														Select the category of task
+													</FormDescription>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="status"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Status</FormLabel>
+													<Select
+														onValueChange={field.onChange}
+														defaultValue={field.value}
+													>
+														<FormControl>
+															<SelectTrigger>
+																<SelectValue placeholder="Select Status" />
+															</SelectTrigger>
+														</FormControl>
+														<SelectContent>
+															<SelectItem value="idle">Idle</SelectItem>
+															<SelectItem value="ongoing">Ongoing</SelectItem>
+															<SelectItem value="finished">Finished</SelectItem>
+															<SelectItem value="halted">Halted</SelectItem>
+														</SelectContent>
+													</Select>
+													<FormDescription>
+														This is your public display name.
+													</FormDescription>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</>
+								)}
+								<FormField
+									control={form.control}
+									name="title"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Title</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter Title" {...field} />
+											</FormControl>
+											<FormDescription>
+												This is title of your task.
+											</FormDescription>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="deadline"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Deadline</FormLabel>
+
+											<Popover>
+												<PopoverTrigger asChild>
 													<FormControl>
-														<SelectTrigger>
-															<SelectValue placeholder="Select Type" />
-														</SelectTrigger>
+														<Button
+															variant={"outline"}
+															className={cn(
+																" w-full pl-3 text-left font-normal",
+																!field.value && "text-muted-foreground"
+															)}
+														>
+															{field.value ? (
+																format(field.value, "PPP")
+															) : (
+																<span>Pick a date</span>
+															)}
+															<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+														</Button>
 													</FormControl>
-													<SelectContent>
-														<SelectItem value="daily">Daily</SelectItem>
-														<SelectItem value="weekly">Weekly</SelectItem>
-														<SelectItem value="monthly">Monthly</SelectItem>
-														<SelectItem value="yearly">Yearly</SelectItem>
-													</SelectContent>
-												</Select>
-												<FormDescription>
-													Select the category of task
-												</FormDescription>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+												</PopoverTrigger>
+												<PopoverContent className="w-auto p-0" align="start">
+													<Calendar
+														mode="single"
+														className="bg-white shadow-xl"
+														selected={field.value}
+														onSelect={field.onChange}
+														disabled={(date) =>
+															date > new Date() || date < new Date("1900-01-01")
+														}
+														initialFocus
+													/>
+												</PopoverContent>
+											</Popover>
+
+											<FormDescription>
+												This is the deadline you wish to finish the task .
+											</FormDescription>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<span className="col-span-2">
 									<FormField
 										control={form.control}
-										name="status"
+										name="description"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Status</FormLabel>
-												<Select
-													onValueChange={field.onChange}
-													defaultValue={field.value}
-												>
-													<FormControl>
-														<SelectTrigger>
-															<SelectValue placeholder="Select Status" />
-														</SelectTrigger>
-													</FormControl>
-													<SelectContent>
-														<SelectItem value="idle">Idle</SelectItem>
-														<SelectItem value="ongoing">Ongoing</SelectItem>
-														<SelectItem value="finished">Finished</SelectItem>
-														<SelectItem value="halted">Halted</SelectItem>
-													</SelectContent>
-												</Select>
+												<FormLabel>Description</FormLabel>
+												<FormControl>
+													<Textarea
+														placeholder="Enter Description"
+														{...field}
+													/>
+												</FormControl>
 												<FormDescription>
-													This is your public display name.
+													This is your description of the task
 												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}
 									/>
-								</>
-							)}
-							<FormField
-								control={form.control}
-								name="title"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Title</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter Title" {...field} />
-										</FormControl>
-										<FormDescription>
-											This is title of your task.
-										</FormDescription>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="description"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Description</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter Description" {...field} />
-										</FormControl>
-										<FormDescription>
-											This is your description of the task
-										</FormDescription>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+								</span>
+							</span>
 							<Button type="submit">Submit</Button>
 						</form>
 					</Form>

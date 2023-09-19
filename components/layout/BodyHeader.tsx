@@ -10,7 +10,7 @@ const BodyHeader = ({
 	return (
 		<header className="mb-4 flex flex-col gap-4">
 			<h1 className="page-title">{title}</h1>
-			<p>{description ?? ""}</p>
+			<p className="font-semibold">{description ?? ""}</p>
 		</header>
 	);
 };

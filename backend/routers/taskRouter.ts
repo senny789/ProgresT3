@@ -1,12 +1,44 @@
 import { z } from 'zod';
 import { procedure, router } from '@/backend/trpc';
 import { prisma } from '@/utils/prisma';
+import { TRPCError } from '@trpc/server';
+import { Task } from '@prisma/client';
+function generateResponseObject(ListofTask:Task[]){
+  const TaskResponseObject=new Map();
+  TaskResponseObject.set('idle',ListofTask.filter(dat=>dat.status==='idle'));
+  TaskResponseObject.set('ongoing',ListofTask.filter(dat=>dat.status==='ongoing'));
+  TaskResponseObject.set('finished',ListofTask.filter(dat=>dat.status==='finished'));
+  TaskResponseObject.set('halted',ListofTask.filter(dat=>dat.status==='halted'));
+  return Object.fromEntries(TaskResponseObject)
+  }
 export const taskRouter = router({
-  getTasks: procedure 
+  getTasks: procedure.input(
+    z.object({
+      id:z.number()
+    }
+    )
+  ) 
     .query(async (opts) => {
-      const tasks=await prisma.task.findMany()
+      const {input}=opts
+      const [daily,weekly,monthly,yearly]=await Promise.all([prisma.task.findMany({
+        where:{type:'daily',userId:input.id}
+      }),prisma.task.findMany({
+        where:{type:'weekly',userId:input.id}
+      }),prisma.task.findMany({
+        where:{type:'monthly',userId:input.id}
+      })
+    ,prisma.task.findMany({
+      where:{type:'yearly',userId:input.id}
+    })])
+      const resposeObject={
+        daily:generateResponseObject(daily),
+        weekly:generateResponseObject(weekly),
+        monthly:generateResponseObject(monthly),
+        yearly:generateResponseObject(yearly)
+      
+      }
       return {
-        tasks: tasks,
+        tasks: resposeObject,
       };
     }),
     deleteTask:procedure.input(z.number()).mutation(async(opts)=>{
@@ -27,40 +59,68 @@ export const taskRouter = router({
       if(deleted)
       return {status:200,message:`Deleted Task .`}
     }),
-    getDailyTasks:procedure.query(async(opts)=>{
+    getDailyTasks: procedure.input(
+    z.object({
+      id:z.number()
+    }
+    )
+  ) 
+    .query(async (opts) => {
+      const {input}=opts
       const tasks=await prisma.task.findMany({
         where:{
-          type:'daily'
+          type:'daily',userId:input.id
         }
       })
       return{
         tasks
       }
     }),
-    getWeeklyTasks:procedure.query(async(opts)=>{
+    getWeeklyTasks: procedure.input(
+      z.object({
+        id:z.number()
+      }
+      )
+    ) 
+      .query(async (opts) => {
+        const {input}=opts
       const tasks=await prisma.task.findMany({
         where:{
-          type:'weekly'
+          type:'weekly',userId:input.id
         }
       })
       return{
         tasks
       }
     }),
-    getMonthlyTasks:procedure.query(async(opts)=>{
+    getMonthlyTasks: procedure.input(
+      z.object({
+        id:z.number()
+      }
+      )
+    ) 
+      .query(async (opts) => {
+        const {input}=opts
       const tasks=await prisma.task.findMany({
         where:{
-          type:'monthly'
+          type:'monthly',userId:input.id
         }
       })
       return{
         tasks
       }
     }),
-    getYearlyTasks:procedure.query(async(opts)=>{
+    getYearlyTasks: procedure.input(
+      z.object({
+        id:z.number()
+      }
+      )
+    ) 
+      .query(async (opts) => {
+        const {input}=opts
       const tasks=await prisma.task.findMany({
         where:{
-          type:'yearly'
+          type:'yearly',userId:input.id
         }
       })
       return{
@@ -71,14 +131,32 @@ export const taskRouter = router({
         z.object({
           type:z.enum(['daily','weekly','monthly','yearly']),
           status:z.enum(['idle','ongoing','finished','halted']),
+          deadline:z.date(),
           title:z.string(),
           description:z.string(),
-
+          userId:z.number(),
         })
     ).mutation( async (opts)=>{
       const {input}=opts;
-      const products= await prisma.task.create({data:input})
-      return {products , status:200}
+      const existingProduct=await prisma.task.findFirst({
+        where:{
+          type:input.type,
+          title:input.title
+        }
+      })
+      if(existingProduct){
+      
+        throw new TRPCError({
+          code:'BAD_REQUEST',
+          message:'Task already exisits'
+        })
+      }
+      const today = new Date() 
+      const tomorrow = new Date(today)
+       tomorrow.setDate(today.getDate() + 1)
+
+      const task= await prisma.task.create({data:{...input,deadline:input.type==='daily'?tomorrow:input.deadline}})
+      return {task , status:200}
     })
     ,
     updateTaskStatus:procedure.input(

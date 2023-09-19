@@ -9,6 +9,9 @@ import TaskAddModal from "../TaskModals/TaskAddModal";
 
 import { trpc } from "@/utils/trpc";
 import { createPortal } from "react-dom";
+import { selectUserId } from "@/store/AuthReducer";
+import { useSelector } from "react-redux";
+import { Task, TaskType } from "@prisma/client";
 export type Status = "idle" | "ongoing" | "finished" | "halted";
 const ListItem = ({ tsk, type, isVisible }: any) => {
 	if (tsk !== undefined)
@@ -33,28 +36,28 @@ const DragedItem = ({ tsk }: any) => {
 		);
 };
 
-const TaskList = ({ taskList, type }: { taskList: any; type: string }) => {
+const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 	const [tasks, setTasks] = useState({
 		ongoing: [] as any,
 		idle: [] as any,
 		finished: [] as any,
 		halted: [] as any,
 	});
-	const [activeTaskList, setActiveTaskList] = useState([]);
+
 	const status = ["idle", "ongoing", "finished", "halted"];
 
 	useEffect(() => {
 		setTasks({
-			ongoing: taskList.data?.tasks.filter((tsk) => {
+			ongoing: taskList?.filter((tsk) => {
 				return tsk.status === "ongoing";
 			}),
-			idle: taskList.data?.tasks.filter((tsk) => {
+			idle: taskList?.filter((tsk) => {
 				return tsk.status === "idle";
 			}),
-			finished: taskList.data?.tasks.filter((tsk) => {
+			finished: taskList?.filter((tsk) => {
 				return tsk.status === "finished";
 			}),
-			halted: taskList.data?.tasks.filter((tsk) => {
+			halted: taskList?.filter((tsk) => {
 				return tsk.status === "halted";
 			}),
 		});
@@ -143,19 +146,19 @@ const TaskList = ({ taskList, type }: { taskList: any; type: string }) => {
 
 	const cardColor = {
 		idle: {
-			border: "border-gray-500 ",
+			border: "border-[#3A4454] ",
 			title: "",
 		},
 		ongoing: {
-			border: "border-orange-500 ",
+			border: "border-[#F5CE9E] ",
 			title: "text-orange-500 ",
 		},
 		finished: {
-			border: "border-green-500 ",
+			border: "border-[#0CCE6B] ",
 			title: "text-green-500 ",
 		},
 		halted: {
-			border: "border-red-500 ",
+			border: "border-[#FF3E41] ",
 			title: "text-red-500 ",
 		},
 	};
