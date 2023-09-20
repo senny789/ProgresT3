@@ -9,19 +9,22 @@ import TaskAddModal from "../TaskModals/TaskAddModal";
 
 import { trpc } from "@/utils/trpc";
 import { createPortal } from "react-dom";
-import { selectUserId } from "@/store/AuthReducer";
-import { useSelector } from "react-redux";
+
 import { Task, TaskType } from "@prisma/client";
 export type Status = "idle" | "ongoing" | "finished" | "halted";
 const ListItem = ({ tsk, type, isVisible }: any) => {
 	if (tsk !== undefined)
 		return (
 			<DraggableListItem
-				className={" bg-white p-2 z-10  rounded-md border-2 border-black"}
+				className={
+					" bg-white p-2 z-10 h-fit min-w-fit   rounded-md border-2 shadow-md "
+				}
 				id={tsk.id}
 				data={type}
 			>
-				<h1 className="font-bold">{tsk.title}</h1>
+				<h1 className="font-bold">
+					{tsk.title.length > 15 ? tsk.title.slice(0, 15) + "..." : tsk.title}
+				</h1>
 				<span>{tsk.description}</span>
 			</DraggableListItem>
 		);
@@ -29,7 +32,11 @@ const ListItem = ({ tsk, type, isVisible }: any) => {
 const DragedItem = ({ tsk }: any) => {
 	if (tsk !== undefined)
 		return (
-			<div className={" bg-white p-2 z-10  rounded-md border-2 border-black"}>
+			<div
+				className={
+					" bg-white p-2 z-10 min-w-fit  rounded-md border-2 shadow-md "
+				}
+			>
 				<h1 className="font-bold">{tsk.title}</h1>
 				<span>{tsk.description}</span>
 			</div>
@@ -146,20 +153,20 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 
 	const cardColor = {
 		idle: {
-			border: "border-[#3A4454] ",
-			title: "",
+			border: " border-[#3A4454] ",
+			title: "  ",
 		},
 		ongoing: {
 			border: "border-[#F5CE9E] ",
-			title: "text-orange-500 ",
+			title: "text-orange-500  ",
 		},
 		finished: {
 			border: "border-[#0CCE6B] ",
-			title: "text-green-500 ",
+			title: "text-green-500  ",
 		},
 		halted: {
 			border: "border-[#FF3E41] ",
-			title: "text-red-500 ",
+			title: "text-red-500  ",
 		},
 	};
 
@@ -215,13 +222,13 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 				key={stat}
 				id={stat}
 				className={cn(
-					"border-2 h-[70vh] w-1/4 flex-grow rounded-3xl text-xl p-2 shadow-2xl relative overflow-hidden",
-					cardColor[stat as keyof typeof cardColor].border
+					"border-2 w-full h-[30vh] md:h-[70vh] md:w-1/4 flex-grow rounded-3xl text-xl p-5 shadow-2xl relative overflow-hidden "
+					// cardColor[stat as keyof typeof cardColor].border
 				)}
 			>
 				<h2
 					className={cn(
-						"text-center font-bold capitalize",
+						"text-center font-bold capitalize after:content-[':'] ",
 						cardColor[stat as keyof typeof cardColor].title
 					)}
 				>
@@ -250,7 +257,9 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 				onDragOver={handleDragOver}
 				onDragStart={handleDragStart}
 			>
-				<div className="flex gap-8 w-full  ">{renderTaskList}</div>
+				<div className="flex flex-col md:flex-row gap-8 w-full  ">
+					{renderTaskList}
+				</div>
 				{isDragging ? (
 					<DroppableContainer
 						key={"delete"}

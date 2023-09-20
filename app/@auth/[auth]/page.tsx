@@ -6,6 +6,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import LoginForm from "@/components/forms/LoginForm";
 import SignupForm from "@/components/forms/SignupForm";
+import Link from "next/link";
+
 const LoginSignup = ({ params }: { params: { auth: string } }) => {
 	if (!(params.auth === "login" || params.auth === "signup")) {
 		notFound();
@@ -14,7 +16,9 @@ const LoginSignup = ({ params }: { params: { auth: string } }) => {
 	return (
 		<section>
 			<nav className="flex justify-between">
-				<h1 className="italic font-bold text-5xl">Progres</h1>
+				<Link href="/" className="italic font-bold text-5xl">
+					Progres
+				</Link>
 			</nav>
 			<article className="flex w-full ">
 				<span className="w-1/2 flex justify-center items-center">

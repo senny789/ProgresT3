@@ -4,7 +4,9 @@ const Home = () => {
 	return (
 		<main className=" h-full flex flex-col">
 			<nav className="flex justify-between">
-				<h1 className="italic font-bold text-5xl">Progres</h1>
+				<Link href="/" className="italic font-bold text-5xl">
+					Progres
+				</Link>
 				<ul className="flex gap-4 text-xl font-semibold">
 					<li>
 						<Link href={"/login"}>Login</Link>
@@ -15,7 +17,7 @@ const Home = () => {
 				</ul>
 			</nav>
 			<article className=" flex-grow flex items-center">
-				<p className="text-[9rem]  tracking-wide w-3/4  font-light text-slate-900 ">
+				<p className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-wide w-full  font-light text-slate-900 ">
 					<span className="font-semibold text-purple-400">Manage</span> and{" "}
 					<span className="font-semibold text-green-400">Track</span> your{" "}
 					<span className="font-semibold">tasks</span> in a easy and{" "}

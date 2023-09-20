@@ -108,7 +108,7 @@
 @layer components{
   
   .page-title{
-    @apply font-bold text-6xl
+    @apply font-bold text-4xl md:text-6xl
   }
   .link{
     @apply cursor-pointer hover:underline underline-offset-4 before:content-["-"]

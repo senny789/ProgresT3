@@ -3,7 +3,7 @@ import React from "react";
 
 const Body = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<div className={cn("p-4 w-full max-h-screen  overflow-scroll")}>
+		<div className={cn("p-4 w-full h-screen max-h-screen  overflow-scroll")}>
 			{children}
 		</div>
 	);

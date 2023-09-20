@@ -2,10 +2,10 @@
 import BodyHeader from "@/components/layout/BodyHeader";
 import { selectUserId } from "@/store/AuthReducer";
 import { trpc } from "@/utils/trpc";
-import { Task } from "@prisma/client";
-import { configureStore } from "@reduxjs/toolkit";
-import { useEffect } from "react";
+
 import { useSelector } from "react-redux";
+import React, { PureComponent } from "react";
+
 import {
 	BarChart,
 	Bar,
@@ -16,7 +16,11 @@ import {
 	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	ComposedChart,
+	Line,
+	Area,
 } from "recharts";
+import { useIsSmall } from "@/hooks/useMatchMedia";
 
 type taskResponse = {
 	daily: any;
@@ -24,6 +28,44 @@ type taskResponse = {
 	monthly: any;
 	yearly: any;
 };
+const vertdata = [
+	{
+		name: "Page A",
+		uv: 590,
+		pv: 800,
+		amt: 1400,
+	},
+	{
+		name: "Page B",
+		uv: 868,
+		pv: 967,
+		amt: 1506,
+	},
+	{
+		name: "Page C",
+		uv: 1397,
+		pv: 1098,
+		amt: 989,
+	},
+	{
+		name: "Page D",
+		uv: 1480,
+		pv: 1200,
+		amt: 1228,
+	},
+	{
+		name: "Page E",
+		uv: 1520,
+		pv: 1108,
+		amt: 1100,
+	},
+	{
+		name: "Page F",
+		uv: 1400,
+		pv: 680,
+		amt: 1700,
+	},
+];
 export default function Home() {
 	const userId = useSelector(selectUserId);
 	const { data } = trpc.tasks.getTasks.useQuery({ id: userId });
@@ -39,7 +81,7 @@ export default function Home() {
 		}
 	);
 	const user = useSelector((state: any) => state.auth.user);
-
+	const isSmallWindow = useIsSmall();
 	return (
 		<main>
 			<BodyHeader
@@ -49,13 +91,14 @@ export default function Home() {
 			<h2 className="font-semibold">
 				Here you will see you overall progress for the tasks you have added.
 			</h2>
-			<section className="h-[60vh] mt-4 ">
+			<section className="h-[70vh] mt-4 ">
 				<h3 className="font-semibold">Current Tasks Status:</h3>
-				<ResponsiveContainer width="90%" height="100%" className={"m-auto"}>
+				<ResponsiveContainer className={""}>
 					<BarChart
 						width={500}
 						height={300}
 						data={ChartData}
+						layout={!isSmallWindow ? "vertical" : "horizontal"}
 						margin={{
 							top: 20,
 							right: 30,
@@ -64,8 +107,19 @@ export default function Home() {
 						}}
 					>
 						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis dataKey="name" />
-						<YAxis />
+						{!isSmallWindow ? (
+							<>
+								<XAxis type="number" />
+
+								<YAxis dataKey="name" type="category" scale="band" />
+							</>
+						) : (
+							<>
+								<XAxis dataKey="name" />
+								<YAxis />
+							</>
+						)}
+
 						<Tooltip />
 						<Legend />
 						<Bar dataKey="idle" fill="#3A4454" />

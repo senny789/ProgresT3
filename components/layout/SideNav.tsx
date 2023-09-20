@@ -10,9 +10,9 @@ const SideNav = () => {
 	const dispatch = useDispatch();
 
 	return (
-		<section className="h-screen w-[250px] border-r-[1px] shadow-[0px_0px_8px_0px_black] p-8 flex flex-col gap-4">
-			<h1 className="font-bold text-4xl ">Progres</h1>
-			<ul className="flex flex-col gap-4 mt-10 text-xl">
+		<section className="h-[50px]  w-screen   md:h-screen md:w-[250px] md:border-r-[1px] shadow-[0px_0px_8px_0px_black] md:shadow-[0px_0px_8px_0px_#aaa] p-8 flex flex-row justify-between items-center md:flex-col gap-4">
+			<h1 className="font-bold text-xl md:text-4xl ">Progres</h1>
+			<ul className="flex items-center md:items-start md:flex-col gap-4 md:mt-10 text-md md:text-xl">
 				<li className="cursor-pointer hover:underline underline-offset-4">
 					<Link href={"/dashboard"}>Dashboard</Link>
 				</li>
@@ -21,7 +21,7 @@ const SideNav = () => {
 				</li>
 			</ul>
 			<span
-				className="hover:underline cursor-pointer mt-auto flex font-semibold"
+				className="hover:underline cursor-pointer md:mt-auto mt-0 flex font-semibold text-sm"
 				onClick={() => dispatch(logoutUser())}
 			>
 				<LogOutIcon /> Logout

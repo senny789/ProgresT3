@@ -27,7 +27,12 @@ function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body className={cn(inter.className, "flex gap-8 min-h-screen")}>
+			<body
+				className={cn(
+					inter.className,
+					" flex md:flex-row flex-col gap-0 md:gap-8 min-h-screen"
+				)}
+			>
 				<TrpcReduxProvider>
 					<AuthChecker
 						renderAuth={
