@@ -20,7 +20,7 @@ import {
 	Line,
 	Area,
 } from "recharts";
-import { useIsSmall } from "@/hooks/useMatchMedia";
+import { useIsMedium, useIsSmall } from "@/hooks/useMatchMedia";
 
 type taskResponse = {
 	daily: any;
@@ -81,7 +81,8 @@ export default function Home() {
 		}
 	);
 	const user = useSelector((state: any) => state.auth.user);
-	const isSmallWindow = useIsSmall();
+	const isMedium = useIsMedium();
+
 	return (
 		<main>
 			<BodyHeader
@@ -98,7 +99,7 @@ export default function Home() {
 						width={500}
 						height={300}
 						data={ChartData}
-						layout={!isSmallWindow ? "vertical" : "horizontal"}
+						layout={!isMedium ? "vertical" : "horizontal"}
 						margin={{
 							top: 20,
 							right: 30,
@@ -107,7 +108,7 @@ export default function Home() {
 						}}
 					>
 						<CartesianGrid strokeDasharray="3 3" />
-						{!isSmallWindow ? (
+						{!isMedium ? (
 							<>
 								<XAxis type="number" />
 
