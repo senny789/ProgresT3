@@ -52,7 +52,7 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 	});
 
 	const status = ["idle", "ongoing", "finished", "halted"];
-
+	const [deleteDragged, setDeleteDragged] = useState<any>();
 	useEffect(() => {
 		setTasks({
 			ongoing: taskList?.filter((tsk) => {
@@ -175,7 +175,7 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 		let overCard = event.over.id;
 
 		if (!activeCard || !overCard || activeCard === overCard) return;
-		if (event.over.id !== "delete")
+		if (event.over.id !== "delete") {
 			setTasks((curr: any) => {
 				return {
 					...curr,
@@ -187,6 +187,11 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 					[overCard]: [...curr[overCard], draggedTask],
 				};
 			});
+
+			setDeleteDragged(undefined);
+		} else if (event.over.id === "delete") {
+			setDeleteDragged(draggedTask);
+		}
 	}
 	function handleDragEnd(event: any) {
 		const { over } = event;
@@ -196,6 +201,7 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 			handleUpdate(over.id);
 		}
 		setIsDragging(false);
+		setDeleteDragged(undefined);
 	}
 	function handleDragStart(event: any) {
 		setIsDragging(true);
@@ -273,6 +279,7 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 						>
 							Delete item
 						</h2>
+						<DragedItem tsk={deleteDragged} />
 					</DroppableContainer>
 				) : null}
 
