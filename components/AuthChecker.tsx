@@ -24,17 +24,18 @@ const AuthChecker = ({
 	const getUser = trpc.users.getUser.useQuery();
 	const pathName = usePathname();
 	const router = useRouter();
+	const authorized = useSelector((state: any) => state.auth.authorized);
 
 	const dispatch = useDispatch();
 
 	useEffect(() => {
 		if (isAuthorized.isSuccess) {
 			dispatch(authorizeUser());
-
+			// console.log("test");
 			if (pathName === "/login" || pathName === "/signup") {
-				router.push("/dashboard");
+				location.href = "/dashboard";
 			} else if (pathName === "/") {
-				router.push("/dashboard");
+				location.href = "/dashboard";
 			}
 		}
 		if (
@@ -51,7 +52,6 @@ const AuthChecker = ({
 			dispatch(updateUser({ user: getUser.data }));
 		}
 	}, [getUser.data]);
-	const authorized = useSelector((state: any) => state.auth.authorized);
 
 	const AuthRender = authorized ? (
 		children

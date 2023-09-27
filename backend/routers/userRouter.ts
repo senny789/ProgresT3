@@ -11,7 +11,7 @@ export const userRouter = router({
     createUser:procedure.input(z.object({
         username:z.string(),
         password:z.string(),
-        email:z.string()
+        email:z.string().email()
     }))
     .mutation(async(opts)=>{
             const {input} =opts;
@@ -29,7 +29,7 @@ export const userRouter = router({
             }
     }),
     loginUser:procedure.input(z.object({
-        email:z.string(),
+        email:z.string().email(),
         password:z.string()
     })).mutation(async (opts)=>{
         const {input}=opts;

@@ -65,7 +65,7 @@ const TaskAddModal = ({
 		type: z.enum(["daily", "monthly", "weekly", "yearly"]),
 		status: z.enum(["idle", "ongoing", "finished", "halted"]),
 		title: z.string({ required_error: "Please enter Title " }),
-		deadline: z.date({ required_error: "Please enter deadline " }),
+		deadline: z.date({ required_error: "Please enter deadline " }).optional(),
 		description: z.string({ required_error: "Please enter Description " }),
 	});
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -100,11 +100,51 @@ const TaskAddModal = ({
 
 	const handleSubmit = (values: z.infer<typeof formSchema>) => {
 		const taskType = typeof type !== undefined ? { ...type } : {};
+
 		taskMutation.mutate({
 			...values,
 			...(taskType as any),
+			deadline: type?.type === "daily" ? new Date() : values.deadline,
 			userId: userId,
 		});
+	};
+	const getDeadLine = (date: Date, type: string) => {
+		const newDate = new Date();
+		const currDate = new Date(newDate.getTime() - 24 * 60 * 60 * 1000);
+
+		switch (type) {
+			case "weekly":
+				return (
+					date < currDate ||
+					date >
+						new Date(
+							newDate.getTime() + (6 - newDate.getDay()) * 24 * 60 * 60 * 1000
+						)
+				);
+			case "monthly":
+				return (
+					date < currDate ||
+					date >
+						new Date(
+							newDate.getTime() + (30 - newDate.getDay()) * 24 * 60 * 60 * 1000
+						)
+				);
+			case "yearly":
+				return (
+					date < currDate ||
+					date >
+						new Date(
+							newDate.getTime() +
+								((11 - newDate.getMonth()) * 30 - newDate.getDay()) *
+									24 *
+									60 *
+									60 *
+									1000
+						)
+				);
+			default:
+				return false;
+		}
 	};
 
 	return (
@@ -199,53 +239,55 @@ const TaskAddModal = ({
 										</FormItem>
 									)}
 								/>
-								<FormField
-									control={form.control}
-									name="deadline"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Deadline</FormLabel>
+								{type?.type !== "daily" ? (
+									<FormField
+										control={form.control}
+										name="deadline"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Deadline</FormLabel>
 
-											<Popover>
-												<PopoverTrigger asChild>
-													<FormControl>
-														<Button
-															variant={"outline"}
-															className={cn(
-																" w-full pl-3 text-left font-normal",
-																!field.value && "text-muted-foreground"
-															)}
-														>
-															{field.value ? (
-																format(field.value, "PPP")
-															) : (
-																<span>Pick a date</span>
-															)}
-															<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-														</Button>
-													</FormControl>
-												</PopoverTrigger>
-												<PopoverContent className="w-auto p-0" align="start">
-													<Calendar
-														mode="single"
-														className="bg-white shadow-xl"
-														selected={field.value}
-														onSelect={field.onChange}
-														disabled={(date) =>
-															date > new Date() || date < new Date("1900-01-01")
-														}
-														initialFocus
-													/>
-												</PopoverContent>
-											</Popover>
+												<Popover>
+													<PopoverTrigger asChild>
+														<FormControl>
+															<Button
+																variant={"outline"}
+																className={cn(
+																	" w-full pl-3 text-left font-normal",
+																	!field.value && "text-muted-foreground"
+																)}
+															>
+																{field.value ? (
+																	format(field.value, "PPP")
+																) : (
+																	<span>Pick a date</span>
+																)}
+																<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+															</Button>
+														</FormControl>
+													</PopoverTrigger>
+													<PopoverContent className="w-auto p-0" align="start">
+														<Calendar
+															mode="single"
+															className="bg-white shadow-xl"
+															selected={field.value}
+															onSelect={field.onChange}
+															disabled={(date) =>
+																getDeadLine(date, type?.type || "")
+															}
+															initialFocus
+														/>
+													</PopoverContent>
+												</Popover>
 
-											<FormDescription>
-												This is the deadline you wish to finish the task .
-											</FormDescription>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+												<FormDescription>
+													This is the deadline you wish to finish the task .
+												</FormDescription>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								) : null}
 								<span className="col-span-2">
 									<FormField
 										control={form.control}

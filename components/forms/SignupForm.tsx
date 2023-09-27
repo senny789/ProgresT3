@@ -17,10 +17,11 @@ import { Button } from "@/components/ui/button";
 import { trpc } from "@/utils/trpc";
 import { handleLogin } from "@/lib/authorization";
 import { useDispatch } from "react-redux";
+import Loading from "../Loading";
 
 const SignupForm = () => {
 	const signUpSchema = z.object({
-		email: z.string(),
+		email: z.string().email({ message: "Please enter a valid email" }),
 		username: z.string(),
 		password: z.string(),
 	});
@@ -91,7 +92,10 @@ const SignupForm = () => {
 							</FormItem>
 						)}
 					/>
-					<Button className="w-fit">Signup</Button>
+
+					<Button className="w-fit">
+						{userMutate.isLoading ? "Loading..." : "Signup"}
+					</Button>
 				</form>
 			</Form>
 		</section>

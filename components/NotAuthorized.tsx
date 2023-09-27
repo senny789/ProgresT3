@@ -7,7 +7,7 @@ const NotAuthorized = () => {
 			<span>
 				Not Authorized ,Visit{" "}
 				<a
-					href={"login"}
+					href={"/login"}
 					className="underline underline-offset-4 cursor-pointer hover:50"
 				>
 					{" "}

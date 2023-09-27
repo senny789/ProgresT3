@@ -20,16 +20,25 @@ export const taskRouter = router({
   ) 
     .query(async (opts) => {
       const {input}=opts
-      const [daily,weekly,monthly,yearly]=await Promise.all([prisma.task.findMany({
-        where:{type:'daily',userId:input.id}
-      }),prisma.task.findMany({
-        where:{type:'weekly',userId:input.id}
-      }),prisma.task.findMany({
-        where:{type:'monthly',userId:input.id}
-      })
-    ,prisma.task.findMany({
-      where:{type:'yearly',userId:input.id}
-    })])
+      
+const updateTasks=await prisma.task.updateMany({
+  where:{
+    deadline:new Date()
+  },
+  data:{
+    status:'halted'
+  }
+})
+const [daily,weekly,monthly,yearly]=await Promise.all([prisma.task.findMany({
+  where:{type:'daily',userId:input.id}
+}),prisma.task.findMany({
+  where:{type:'weekly',userId:input.id}
+}),prisma.task.findMany({
+  where:{type:'monthly',userId:input.id}
+})
+,prisma.task.findMany({
+where:{type:'yearly',userId:input.id}
+})])
       const resposeObject={
         daily:generateResponseObject(daily),
         weekly:generateResponseObject(weekly),

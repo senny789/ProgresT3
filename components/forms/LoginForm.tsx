@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { handleLogin } from "@/lib/authorization";
 const LoginForm = () => {
 	const loginSchema = z.object({
-		email: z.string(),
+		email: z.string().email({ message: "Please enter a valid email" }),
 		password: z.string(),
 	});
 	const dispatch = useDispatch();
@@ -82,7 +82,9 @@ const LoginForm = () => {
 							</FormItem>
 						)}
 					/>
-					<Button className="w-fit">Login</Button>
+					<Button className="w-fit">
+						{loginMutate.isLoading ? "Loading..." : "Login"}
+					</Button>
 				</form>
 			</Form>
 			<p>
