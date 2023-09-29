@@ -53,9 +53,11 @@ type TaskType = {
 const TaskAddModal = ({
 	type,
 	open,
+	groupId,
 	handleOpen,
 }: {
 	type?: TaskType;
+	groupId?: number;
 	open: boolean;
 	handleOpen: (val: boolean) => void;
 }) => {
@@ -97,7 +99,7 @@ const TaskAddModal = ({
 		},
 	});
 	const userId = useSelector(selectUserId);
-
+	console.log(groupId);
 	const handleSubmit = (values: z.infer<typeof formSchema>) => {
 		const taskType = typeof type !== undefined ? { ...type } : {};
 
@@ -105,6 +107,7 @@ const TaskAddModal = ({
 			...values,
 			...(taskType as any),
 			deadline: type?.type === "daily" ? new Date() : values.deadline,
+			groupId: groupId !== undefined ? groupId : null,
 			userId: userId,
 		});
 	};

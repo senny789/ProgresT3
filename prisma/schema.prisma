@@ -15,6 +15,7 @@ model User {
   username    String
  password String
  tasks Task[]
+ group Int[]
 }
 model Task {
   id Int @id @default(autoincrement())
@@ -27,7 +28,15 @@ model Task {
   description String
   user User? @relation(fields:[userId],references:[id])
   userId Int?
- 
+  group Group? @relation (fields:[groupId],references:[id])
+  groupId Int?
+
+}
+model Group{
+  id Int @id @default(autoincrement())
+  name String
+  users String[]
+  tasks Task[]
 }
 enum TaskStatus{
   idle

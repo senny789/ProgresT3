@@ -43,7 +43,15 @@ const DragedItem = ({ tsk }: any) => {
 		);
 };
 
-const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
+const TaskList = ({
+	taskList,
+	type,
+	group,
+}: {
+	taskList: Task[];
+	type: TaskType;
+	group?: { name: string; id: number };
+}) => {
 	const [tasks, setTasks] = useState({
 		ongoing: [] as any,
 		idle: [] as any,
@@ -300,6 +308,7 @@ const TaskList = ({ taskList, type }: { taskList: Task[]; type: TaskType }) => {
 				}}
 				open={modal.open}
 				handleOpen={handleModalOpen}
+				groupId={group?.id || undefined}
 			/>
 		</div>
 	);

@@ -19,6 +19,9 @@ const SideNav = () => {
 				<li className="cursor-pointer hover:underline underline-offset-4">
 					<Link href={"/tasks"}>Tasks</Link>
 				</li>
+				<li className="cursor-pointer hover:underline underline-offset-4">
+					<Link href={"/grp-tasks"}>Group Tasks</Link>
+				</li>
 			</ul>
 			<span
 				className="hover:underline cursor-pointer md:mt-auto mt-0 flex font-semibold text-sm"

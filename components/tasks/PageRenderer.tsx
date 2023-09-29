@@ -10,7 +10,13 @@ import { TaskType } from "@prisma/client";
 import DayoftheWeek from "../TaskPageComponents/DayoftheWeek";
 import MonthYear from "../TaskPageComponents/DayoftheMonth";
 
-const PageRenderer = ({ type }: { type: TaskType }) => {
+const PageRenderer = ({
+	type,
+	group,
+}: {
+	type: TaskType;
+	group?: { name: string; id: number };
+}) => {
 	const userId = useSelector(selectUserId);
 	const getTaskQueryMethod = () => {
 		switch (type) {
@@ -27,9 +33,10 @@ const PageRenderer = ({ type }: { type: TaskType }) => {
 		}
 	};
 	const taskQueryMethod = getTaskQueryMethod();
-
+	console.log(group);
 	const { data } = trpc.tasks[taskQueryMethod as "getDailyTasks"].useQuery({
 		id: userId,
+		groupId: group?.id !== undefined ? group?.id : null,
 	});
 	const tasks = data ? data.tasks : [];
 	const pageRenderDetailList = [
@@ -80,7 +87,7 @@ const PageRenderer = ({ type }: { type: TaskType }) => {
 				description={CurrentPageDetails?.description}
 			/>
 			{CurrentPageDetails?.components}
-			<TaskList taskList={tasks} type={type} />
+			<TaskList taskList={tasks} type={type} group={group} />
 		</>
 	);
 };
