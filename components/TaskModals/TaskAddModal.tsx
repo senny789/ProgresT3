@@ -82,12 +82,25 @@ const TaskAddModal = ({
 		onSuccess() {
 			toast({
 				title: "Task created successfully",
+				variant: "success",
 			});
 			utils.tasks.getTasks.invalidate();
-			utils.tasks.getDailyTasks.invalidate();
-			utils.tasks.getWeeklyTasks.invalidate();
-			utils.tasks.getMonthlyTasks.invalidate();
-			utils.tasks.getYearlyTasks.invalidate();
+			if (type !== undefined) {
+				switch (type?.type) {
+					case "daily":
+						utils.tasks.getDailyTasks.invalidate();
+						break;
+					case "monthly":
+						utils.tasks.getMonthlyTasks.invalidate();
+						break;
+					case "weekly":
+						utils.tasks.getWeeklyTasks.invalidate();
+						break;
+					case "yearly":
+						utils.tasks.getYearlyTasks.invalidate();
+						break;
+				}
+			}
 
 			handleOpen(false);
 		},

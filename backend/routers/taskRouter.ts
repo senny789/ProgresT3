@@ -28,7 +28,8 @@ const queryRoutes = {
 		.input(
 			z.object({
 				id: z.number(),
-				groupId: z.number().optional(),
+				groupId: z.number().nullable().optional(),
+				type: z.enum(["group", "individual"]).optional(),
 			})
 		)
 		.query(async (opts) => {
@@ -45,19 +46,52 @@ const queryRoutes = {
 					status: "halted",
 				},
 			});
+			const groupSelector = input.type !== undefined && input.type === "group";
 
 			const [daily, weekly, monthly, yearly] = await Promise.all([
 				prisma.task.findMany({
-					where: { type: "daily", userId: input.id },
+					where: {
+						type: "daily",
+						userId: input.id,
+						...(input.type === undefined
+							? {}
+							: groupSelector
+							? { groupId: { not: null } }
+							: { groupId: null }),
+					},
 				}),
 				prisma.task.findMany({
-					where: { type: "weekly", userId: input.id },
+					where: {
+						type: "weekly",
+						userId: input.id,
+						...(input.type === undefined
+							? {}
+							: groupSelector
+							? { groupId: { not: null } }
+							: { groupId: null }),
+					},
 				}),
 				prisma.task.findMany({
-					where: { type: "monthly", userId: input.id },
+					where: {
+						type: "monthly",
+						userId: input.id,
+						...(input.type === undefined
+							? {}
+							: groupSelector
+							? { groupId: { not: null } }
+							: { groupId: null }),
+					},
 				}),
 				prisma.task.findMany({
-					where: { type: "yearly", userId: input.id },
+					where: {
+						type: "yearly",
+						userId: input.id,
+						...(input.type === undefined
+							? {}
+							: groupSelector
+							? { groupId: { not: null } }
+							: { groupId: null }),
+					},
 				}),
 			]);
 			const resposeObject = {
@@ -176,7 +210,7 @@ const murationRoutes = {
 				type: z.enum(["daily", "weekly", "monthly", "yearly"]),
 				status: z.enum(["idle", "ongoing", "finished", "halted"]),
 				deadline: z.date(),
-				groupId: z.number().optional(),
+				groupId: z.number().nullable(),
 				title: z.string(),
 				description: z.string(),
 				userId: z.number(),
@@ -188,7 +222,7 @@ const murationRoutes = {
 				where: {
 					type: input.type,
 					title: input.title,
-					groupId: input.groupId,
+					groupId: input.groupId !== null ? input.groupId : null,
 				},
 			});
 			if (existingProduct) {
@@ -205,6 +239,7 @@ const murationRoutes = {
 				data: {
 					...input,
 					deadline: input.type === "daily" ? tomorrow : input.deadline,
+					groupId: input.groupId !== null ? input.groupId : null,
 				},
 			});
 			return { task, status: 200 };

@@ -11,7 +11,7 @@ const TaskPage = ({ groupName }: { groupName?: string }) => {
 	const [open, setOpen] = useState(false);
 	const groupId = useSearchParams()?.get("id");
 	const pathname = usePathname();
-	console.log(groupName);
+	console.log(groupId);
 	return (
 		<div>
 			<BodyHeader
@@ -23,7 +23,7 @@ const TaskPage = ({ groupName }: { groupName?: string }) => {
 				Add Tasks
 			</Button>
 			<TaskAddModal
-				groupId={Number(groupId) ?? undefined}
+				groupId={groupId !== null ? Number(groupId) : undefined}
 				open={open}
 				handleOpen={setOpen}
 			/>

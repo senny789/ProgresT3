@@ -34,23 +34,47 @@ const GroupAddModal = ({
 	handleOpen: (val: boolean) => void;
 }) => {
 	const [emailArray, setEmailAray] = useState<string[] | []>([]);
-	const [email, setEmail] = useState("");
+
+	const utils = trpc.useContext();
+
 	const formSchema = z.object({
 		name: z.string(),
+		email: z.string().email().optional(),
 	});
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 	});
 	const { toast } = useToast();
 	const handleEmailAdd = () => {
-		if (email !== "") {
+		const email = form.getValues("email");
+		if (
+			email !== undefined &&
+			email !== "" &&
+			!form.getFieldState("email").error
+		) {
 			setEmailAray([...emailArray, email]);
-			setEmail("");
+			form.resetField("email");
 		}
 	};
 	const user = useSelector(selectUser);
 
-	const createGroup = trpc.groups.createGroup.useMutation();
+	const createGroup = trpc.groups.createGroup.useMutation({
+		onSuccess: () => {
+			toast({
+				title: "Group created successfully",
+				variant: "success",
+			});
+			utils.groups.invalidate();
+			handleOpen(false);
+			setEmailAray([]);
+		},
+		onError(err) {
+			toast({
+				title: err.message,
+				variant: "destructive",
+			});
+		},
+	});
 	const handleSubmit = (values: z.infer<typeof formSchema>) => {
 		createGroup.mutate({
 			name: values.name,
@@ -79,14 +103,14 @@ const GroupAddModal = ({
 									<FormControl>
 										<Input placeholder="Enter group name." {...field} />
 									</FormControl>
+									<FormMessage />
 
 									<FormDescription>Select the category of task</FormDescription>
-									<FormMessage />
 								</FormItem>
 							)}
 						/>
 						<FormField
-							name=""
+							name="email"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Group Members</FormLabel>
@@ -95,10 +119,9 @@ const GroupAddModal = ({
 										<span className="flex flex-col gap-4">
 											<span className="flex">
 												<Input
-													value={email}
 													placeholder="Enter the email of your collegue ."
 													type="email"
-													onChange={(e) => setEmail(e.target.value)}
+													{...field}
 												></Input>
 												<Button
 													className="bg-slate-500"
@@ -120,13 +143,15 @@ const GroupAddModal = ({
 											</span>
 										</span>
 									</FormControl>
+									<FormMessage />
 
 									<FormDescription>
 										Enter the email address of the users you want to add to the
 										group.
 									</FormDescription>
-									<FormMessage />
-									<Button>Create</Button>
+									<Button>
+										{createGroup.isLoading ? "Loading..." : "Create"}
+									</Button>
 								</FormItem>
 							)}
 						/>
