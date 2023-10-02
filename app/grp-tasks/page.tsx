@@ -32,19 +32,21 @@ const GroupTaskPage = () => {
 				<h2 className="font-bold text-3xl">Groups:</h2>
 				<ul className="text-3xl flex flex-col gap-8 mt-4 justify-center list-disc">
 					{groupList.length > 0 &&
-						groupList?.map((grp) => {
-							return (
-								<li className="link text-2xl" key={grp.name + grp.id}>
-									<Link
-										href={`/grp-tasks/${grp.name.split(" ").join("")}?id=${
-											grp.id
-										}`}
-									>
-										{grp.name}
-									</Link>
-								</li>
-							);
-						})}
+						groupList?.map(
+							(grp: { id: number; name: string; users: string[] }) => {
+								return (
+									<li className="link text-2xl" key={grp.name + grp.id}>
+										<Link
+											href={`/grp-tasks/${grp.name.split(" ").join("")}?id=${
+												grp.id
+											}`}
+										>
+											{grp.name}
+										</Link>
+									</li>
+								);
+							}
+						)}
 				</ul>
 			</main>
 		</div>
