@@ -14,7 +14,7 @@ export const AuthSlice = createSlice({
 	reducers: {
 		loginUser: (state, action: LoginAction) => {
 			(state.authorized = true), (state.user = action.payload.user);
-			// location.href='/dashboard'
+			location.href = "/dashboard";
 		},
 		updateUser: (state, action: { payload: { user: any } }) => {
 			state.user = action.payload.user;

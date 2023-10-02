@@ -33,7 +33,7 @@ const LoginForm = () => {
 	const router = useRouter();
 	const loginMutate = trpc.users.loginUser.useMutation({
 		onSuccess: (data) => {
-			router.push("/dashboard");
+			// router.push("/dashboard");
 
 			handleLogin(dispatch, data);
 		},
