@@ -33,7 +33,7 @@ const PageRenderer = ({
 		}
 	};
 	const taskQueryMethod = getTaskQueryMethod();
-	console.log(group);
+
 	const { data } = trpc.tasks[taskQueryMethod as "getDailyTasks"].useQuery({
 		id: userId,
 		groupId: group?.id !== undefined ? group?.id : null,
