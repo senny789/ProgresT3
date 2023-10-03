@@ -112,7 +112,7 @@ const TaskAddModal = ({
 		},
 	});
 	const userId = useSelector(selectUserId);
-	console.log(groupId);
+
 	const handleSubmit = (values: z.infer<typeof formSchema>) => {
 		const taskType = typeof type !== undefined ? { ...type } : {};
 

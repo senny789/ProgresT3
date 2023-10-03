@@ -11,6 +11,25 @@ import { trpc } from "@/utils/trpc";
 import { createPortal } from "react-dom";
 
 import { Task, TaskType } from "@prisma/client";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/dialog";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
+import { useIsMedium } from "@/hooks/useMatchMedia";
+import { Button } from "../ui/button";
+import { useToast } from "../ui/use-toast";
 export type Status = "idle" | "ongoing" | "finished" | "halted";
 const ListItem = ({ tsk, type, isVisible }: any) => {
 	if (tsk !== undefined)
@@ -42,7 +61,30 @@ const DragedItem = ({ tsk }: any) => {
 			</div>
 		);
 };
-
+const MobileViewList = ({
+	tsk,
+	handleModalOpen,
+}: {
+	tsk: Task;
+	handleModalOpen: (val: boolean, id?: number) => void;
+}) => {
+	return (
+		<span className="bg-white p-2 z-10 h-fit min-w-fit   rounded-md border-2 shadow-xl flex items-center justify-between cursor-default">
+			<span>
+				<h1 className="font-bold">
+					{tsk.title.length > 15 ? tsk.title.slice(0, 15) + "..." : tsk.title}
+				</h1>
+				<span>{tsk.description}</span>
+			</span>
+			<span
+				className="font-semibold text-slate-500 underline cursor-pointer"
+				onClick={() => handleModalOpen(true, Number(tsk.id))}
+			>
+				Change Status
+			</span>
+		</span>
+	);
+};
 const TaskList = ({
 	taskList,
 	type,
@@ -58,7 +100,16 @@ const TaskList = ({
 		finished: [] as any,
 		halted: [] as any,
 	});
-
+	const isMedium = useIsMedium();
+	const [taskStatusModal, setTaskStatusModal] = useState<{
+		isOpen: boolean;
+		taskId: null | number;
+	}>({
+		isOpen: false,
+		taskId: null,
+	});
+	const [statusChange, setStatusChange] = useState<"" | Status>("");
+	const { toast } = useToast();
 	const status = ["idle", "ongoing", "finished", "halted"];
 	const [deleteDragged, setDeleteDragged] = useState<any>();
 	useEffect(() => {
@@ -112,6 +163,16 @@ const TaskList = ({
 				id: 0,
 				isOpen: false,
 			});
+			setStatusChange("");
+			setTaskStatusModal({
+				taskId: null,
+				isOpen: false,
+			});
+			if (!isMedium)
+				toast({
+					variant: "success",
+					description: "Successfully updated task",
+				});
 		},
 	});
 	const deleteTask = trpc.tasks.deleteTask.useMutation({
@@ -133,10 +194,17 @@ const TaskList = ({
 			status: stat,
 		});
 	};
+	const handleStatusChange = () => {
+		if (taskStatusModal.taskId !== null && statusChange !== "")
+			mutateTask.mutate({
+				id: taskStatusModal.taskId,
+				status: statusChange,
+			});
+	};
 	const handleDelete = () => {
 		deleteTask.mutate(deleteModal.id);
 	};
-	const taskRenderer = (type: string) => {
+	const taskRenderer = (type: string, view: "mobile" | "desktop") => {
 		let currentTasks;
 		switch (type) {
 			case "idle":
@@ -154,9 +222,20 @@ const TaskList = ({
 			default:
 				return;
 		}
-		return currentTasks?.map((tsk: any, index: number) => {
-			return <ListItem key={type + tsk.id + index} tsk={tsk} type={type} />;
-		});
+		if (view === "desktop")
+			return currentTasks?.map((tsk: any, index: number) => {
+				return <ListItem key={type + tsk.id + index} tsk={tsk} type={type} />;
+			});
+		else
+			return currentTasks?.map((tsk: any, index: number) => {
+				return (
+					<MobileViewList
+						key={type + tsk.id + index}
+						tsk={tsk}
+						handleModalOpen={handleTaskStatusChangeModal}
+					/>
+				);
+			});
 	};
 
 	const cardColor = {
@@ -236,7 +315,7 @@ const TaskList = ({
 				key={stat}
 				id={stat}
 				className={cn(
-					"border-2 w-full h-[30vh] md:h-[70vh] md:w-1/4 flex-grow rounded-3xl text-xl p-5 shadow-2xl relative overflow-hidden "
+					"border-2 w-full h-[30vh] md:h-[70vh] md:w-1/4 flex-grow rounded-xl text-xl p-5 shadow-2xl relative overflow-hidden "
 					// cardColor[stat as keyof typeof cardColor].border
 				)}
 			>
@@ -250,7 +329,7 @@ const TaskList = ({
 				</h2>
 
 				<ul className="mt-4  h-[75%] flex flex-col gap-4 max-w-full overflow-y-scroll">
-					{taskRenderer(stat)}
+					{taskRenderer(stat, "desktop")}
 				</ul>
 				<button
 					className="absolute bottom-0 left-0 right-0 p-4  rounded-[inherit] bg-slate-200 hover:opacity-50 z-20"
@@ -263,43 +342,91 @@ const TaskList = ({
 			</DroppableContainer>
 		);
 	});
+	const renderMobileView = status.map((stat) => {
+		return (
+			<div
+				key={stat}
+				id={stat}
+				// className={cn(
+				// 	"border-2 w-full h-[30vh] md:h-[70vh] md:w-1/4 flex-grow rounded-3xl text-xl p-5 shadow-2xl relative overflow-hidden "
+				// 	// cardColor[stat as keyof typeof cardColor].border
+				// )}
+				className="w-full min-h-[50dvh] max-h-[80dvh] relative  overflow-hidden border-2 p-5 rounded-2xl shadow-xl"
+			>
+				<h2
+					className={cn(
+						"text-center font-bold capitalize after:content-[':'] ",
+						cardColor[stat as keyof typeof cardColor].title
+					)}
+				>
+					{stat}
+				</h2>
+
+				<ul className="mt-4 max-h-[400px]   flex flex-col gap-4 overflow-y-scroll">
+					{taskRenderer(stat, "mobile")}
+				</ul>
+				<button
+					className="absolute bottom-0 left-0 right-0 p-4  rounded-[inherit] bg-slate-200 hover:opacity-50 z-20"
+					onClick={() => {
+						handleModalChange(stat);
+					}}
+				>
+					<PlusIcon className="m-auto" />
+				</button>
+			</div>
+		);
+	});
+	function handleTaskStatusChangeModal(val: boolean, id?: number) {
+		if (id !== undefined) {
+			setTaskStatusModal({ taskId: id, isOpen: val });
+		} else {
+			setTaskStatusModal({ ...taskStatusModal, isOpen: val });
+		}
+	}
 	return (
 		<div>
-			<DndContext
-				onDragEnd={handleDragEnd}
-				collisionDetection={closestCenter}
-				onDragOver={handleDragOver}
-				onDragStart={handleDragStart}
-			>
-				<div className="flex flex-col md:flex-row gap-8 w-full  ">
-					{renderTaskList}
-				</div>
-				{isDragging ? (
-					<DroppableContainer
-						key={"delete"}
-						id={"delete"}
-						className={cn(
-							"border-2 rounded-3xl text-xl p-2  absolute top-0 right-10 h-[20vh]  w-[30vw] bg-white"
-						)}
-					>
-						<h2
-							className={cn("text-center font-bold capitalize", "text-red-400")}
+			{!isMedium ? (
+				<div className="flex flex-col gap-8 w-full  ">{renderMobileView}</div>
+			) : (
+				<DndContext
+					onDragEnd={handleDragEnd}
+					collisionDetection={closestCenter}
+					onDragOver={handleDragOver}
+					onDragStart={handleDragStart}
+				>
+					<div className="flex flex-col md:flex-row gap-8 w-full  ">
+						{renderTaskList}
+					</div>
+					{isDragging ? (
+						<DroppableContainer
+							key={"delete"}
+							id={"delete"}
+							className={cn(
+								"border-2 rounded-3xl text-xl p-2  absolute top-0 right-10 h-[20vh]  w-[30vw] bg-white"
+							)}
 						>
-							Delete item
-						</h2>
-						<DragedItem tsk={deleteDragged} />
-					</DroppableContainer>
-				) : null}
+							<h2
+								className={cn(
+									"text-center font-bold capitalize",
+									"text-red-400"
+								)}
+							>
+								Delete item
+							</h2>
+							<DragedItem tsk={deleteDragged} />
+						</DroppableContainer>
+					) : null}
 
-				{createPortal(
-					<DragOverlay>
-						{isDragging && draggedTask !== undefined ? (
-							<DragedItem tsk={draggedTask} />
-						) : null}
-					</DragOverlay>,
-					document.body
-				)}
-			</DndContext>
+					{createPortal(
+						<DragOverlay>
+							{isDragging && draggedTask !== undefined ? (
+								<DragedItem tsk={draggedTask} />
+							) : null}
+						</DragOverlay>,
+						document.body
+					)}
+				</DndContext>
+			)}
 
 			<TaskAddModal
 				type={{
@@ -310,6 +437,32 @@ const TaskList = ({
 				handleOpen={handleModalOpen}
 				groupId={group?.id || undefined}
 			/>
+			<Dialog
+				open={taskStatusModal.isOpen}
+				onOpenChange={handleTaskStatusChangeModal}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Change Task Status</DialogTitle>
+						<Select onValueChange={(val: Status) => setStatusChange(val)}>
+							<SelectTrigger className="w-full">
+								<SelectValue placeholder="Select Status." />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectGroup>
+									<SelectItem value="idle">Idle</SelectItem>
+									<SelectItem value="ongoing">On Going</SelectItem>
+									<SelectItem value="finished">Finished</SelectItem>
+									<SelectItem value="halted">Halted</SelectItem>
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+						<Button className="w-fit " onClick={handleStatusChange}>
+							Change
+						</Button>
+					</DialogHeader>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };
