@@ -39,7 +39,7 @@ const GroupAddModal = ({
 
 	const formSchema = z.object({
 		name: z.string(),
-		email: z.string().email().optional(),
+		email: z.string().email().nullable(),
 	});
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -49,6 +49,7 @@ const GroupAddModal = ({
 		const email = form.getValues("email");
 		if (
 			email !== undefined &&
+			email !== null &&
 			email !== "" &&
 			!form.getFieldState("email").error
 		) {
@@ -123,6 +124,7 @@ const GroupAddModal = ({
 													type="email"
 													{...field}
 												></Input>
+
 												<Button
 													className="bg-slate-500"
 													type="button"
@@ -131,6 +133,8 @@ const GroupAddModal = ({
 													<Plus />
 												</Button>
 											</span>
+											<FormMessage />
+
 											<span className="flex flex-wrap gap-2 w-4/5">
 												{emailArray.map((em) => (
 													<span
@@ -143,7 +147,6 @@ const GroupAddModal = ({
 											</span>
 										</span>
 									</FormControl>
-									<FormMessage />
 
 									<FormDescription>
 										Enter the email address of the users you want to add to the

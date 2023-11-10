@@ -177,11 +177,7 @@ const TaskList = ({
 	});
 	const deleteTask = trpc.tasks.deleteTask.useMutation({
 		onSuccess: () => {
-			utils.tasks.getTasks.invalidate();
-			utils.tasks.getDailyTasks.invalidate();
-			utils.tasks.getWeeklyTasks.invalidate();
-			utils.tasks.getMonthlyTasks.invalidate();
-			utils.tasks.getYearlyTasks.invalidate();
+			utils.tasks.invalidate();
 			setDeleteModal({
 				id: 0,
 				isOpen: false,
